@@ -22,7 +22,7 @@ export default function AboutView() {
     { label: 'GitHub', url: 'https://github.com/printevan11', icon: Github },
     { label: 'LinkedIn', url: 'https://www.linkedin.com/in/evan-roi-tabar', icon: Linkedin },
     { label: 'Facebook', url: 'https://www.facebook.com/evanroi.tabar', icon: Facebook },
-    { label: 'Personal Website', url: 'https://printevan11.github.io', icon: Globe }
+    { label: 'Personal Website', url: 'https://evan-v1.vercel.app/', icon: Globe }
   ];
 
   return (
