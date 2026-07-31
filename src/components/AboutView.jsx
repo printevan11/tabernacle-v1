@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Cpu, Sparkles, Layers } from 'lucide-react';
+import { User, Cpu, Sparkles, Layers, Github, Linkedin, Globe, Facebook, ExternalLink } from 'lucide-react';
 
 export default function AboutView() {
   const techStack = [
@@ -12,11 +12,17 @@ export default function AboutView() {
   ];
 
   const features = [
-    { title: 'Interactive Transposer', desc: 'Transpose any song key up/down with live chord line re-calculation and Nashville Numbering mode.' },
+    { title: 'Interactive Transposer', desc: 'Transpose any song key up/down with live chord line re-calculation.' },
     { title: 'Sunday Lineup Builder', desc: 'Reorder set lists, set key overrides, assign musicians, and write service notes.' },
     { title: 'Web Audio Metronome', desc: 'In-app precision metronome with visual beat dots, 4/4, 3/4, 6/8 time signatures, and Tap Tempo.' },
-    { title: 'Musicians Directory & Feed', desc: 'Band directory with photo uploads, member roles, contact details, and team community feed.' },
-    { title: 'Guitar Chord Library', desc: 'Live SVG chord diagram voicings for Major, Minor, Maj7, Min7, and Sus2.' }
+    { title: 'Musicians Directory & Feed', desc: 'Band directory with photo uploads, member roles, contact details, and team community feed.' }
+  ];
+
+  const socialLinks = [
+    { label: 'GitHub', url: 'https://github.com/printevan11', icon: Github },
+    { label: 'LinkedIn', url: 'https://www.linkedin.com/in/evan-roi-tabar', icon: Linkedin },
+    { label: 'Facebook', url: 'https://www.facebook.com/evanroi.tabar', icon: Facebook },
+    { label: 'Personal Website', url: 'https://printevan11.github.io', icon: Globe }
   ];
 
   return (
@@ -69,7 +75,31 @@ export default function AboutView() {
         </div>
 
         <div style={{ fontSize: '13px', color: 'var(--text2)', lineHeight: 1.7, background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '16px' }}>
-          <strong>Tabernacle</strong> was engineered by <strong>Evan Roi Tabar</strong> to provide church worship leaders, musicians, vocalists, and media teams with a clean, high-performance, and unified digital workspace. It simplifies song transposing, set lineup planning, chord lookup, and team collaboration into one seamless application.
+          <strong>Tabernacle</strong> was engineered by <strong>Evan Roi Tabar</strong> to provide church worship leaders, musicians, vocalists, and media teams with a clean, high-performance, and unified digital workspace. It simplifies song transposing, set lineup planning, and team collaboration into one seamless application.
+        </div>
+
+        {/* SOCIAL & PORTFOLIO LINKS */}
+        <div>
+          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+            Connect with Evan Roi Tabar:
+          </div>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {socialLinks.map((link, i) => {
+              const Icon = link.icon;
+              return (
+                <a
+                  key={i}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline btn-sm"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <Icon size={14} /> {link.label} <ExternalLink size={11} style={{ opacity: 0.6 }} />
+                </a>
+              );
+            })}
+          </div>
         </div>
       </div>
 
