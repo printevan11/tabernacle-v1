@@ -1,11 +1,12 @@
 import React from 'react';
-import { LayoutDashboard, Music, ListMusic, Users, Info } from 'lucide-react';
+import { LayoutDashboard, Music, ListMusic, Users, MessageSquare, Info } from 'lucide-react';
 
 export default function BottomNav({ currentPage, navigate }) {
   const items = [
     { id: 'dashboard', label: 'Home', icon: LayoutDashboard },
     { id: 'songs', label: 'Songs', icon: Music },
     { id: 'lineup', label: 'Lineup', icon: ListMusic },
+    { id: 'lounge', label: 'Lounge', icon: MessageSquare },
     { id: 'members', label: 'Team', icon: Users },
     { id: 'about', label: 'About', icon: Info },
   ];

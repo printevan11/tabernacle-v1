@@ -7,6 +7,7 @@ import SongsView from './components/SongsView';
 import SongDetailView from './components/SongDetailView';
 import LineupView from './components/LineupView';
 import MembersView from './components/MembersView';
+import LoungeView from './components/LoungeView';
 import AboutView from './components/AboutView';
 import ProfileOverlay from './components/ProfileOverlay';
 import FormModal from './components/Modals';
@@ -330,6 +331,10 @@ export default function App() {
               openProfile={(id) => setProfileMemberId(id)}
               deleteMember={handleDeleteMember}
             />
+          )}
+
+          {currentPage === 'lounge' && (
+            <LoungeView members={members} />
           )}
 
           {currentPage === 'about' && (

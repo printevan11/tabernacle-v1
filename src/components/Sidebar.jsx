@@ -4,6 +4,7 @@ import {
   Music,
   ListMusic,
   Users,
+  MessageSquare,
   Sun,
   Moon,
   ChevronLeft,
@@ -60,13 +61,20 @@ export default function Sidebar({
         <div className="divider"></div>
 
         <div className="nav-group">
-          <div className="nav-label">Team</div>
+          <div className="nav-label">Community</div>
           <div
             className={`nav-item ${currentPage === 'members' ? 'active' : ''}`}
             onClick={() => navigate('members')}
           >
             <Users size={17} />
             <span>Musicians</span>
+          </div>
+          <div
+            className={`nav-item ${currentPage === 'lounge' ? 'active' : ''}`}
+            onClick={() => navigate('lounge')}
+          >
+            <MessageSquare size={17} />
+            <span>Team Lounge</span>
           </div>
         </div>
 
