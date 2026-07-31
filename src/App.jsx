@@ -9,8 +9,6 @@ import LineupView from './components/LineupView';
 import MembersView from './components/MembersView';
 import AboutView from './components/AboutView';
 import ProfileOverlay from './components/ProfileOverlay';
-import ChordLibraryModal from './components/ChordLibraryModal';
-import NashvilleModal from './components/NashvilleModal';
 import FormModal from './components/Modals';
 import { ConfirmModal, ToastContainer } from './components/ConfirmModal';
 
@@ -41,8 +39,6 @@ export default function App() {
 
   // Modals & Overlays State
   const [profileMemberId, setProfileMemberId] = useState(null);
-  const [isChordLibOpen, setIsChordLibOpen] = useState(false);
-  const [isNashvilleOpen, setIsNashvilleOpen] = useState(false);
   const [modalState, setModalState] = useState({ isOpen: false, type: null, data: null });
   const [confirmState, setConfirmState] = useState({ isOpen: false, title: '', msg: '', okLabel: 'Delete', resolve: null });
   const [toasts, setToasts] = useState([]);
@@ -267,8 +263,6 @@ export default function App() {
         theme={theme}
         toggleTheme={toggleTheme}
         syncStatus={syncStatus}
-        openChordLib={() => setIsChordLibOpen(true)}
-        openNashville={() => setIsNashvilleOpen(true)}
       />
 
       <div className="main">
@@ -279,8 +273,6 @@ export default function App() {
           toggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
           theme={theme}
           toggleTheme={toggleTheme}
-          openChordLib={() => setIsChordLibOpen(true)}
-          openNashville={() => setIsNashvilleOpen(true)}
         />
 
         <div className="content">
@@ -359,17 +351,6 @@ export default function App() {
           showToast={showToast}
         />
       )}
-
-      <ChordLibraryModal
-        isOpen={isChordLibOpen}
-        onClose={() => setIsChordLibOpen(false)}
-        theme={theme}
-      />
-
-      <NashvilleModal
-        isOpen={isNashvilleOpen}
-        onClose={() => setIsNashvilleOpen(false)}
-      />
 
       <FormModal
         modalState={modalState}

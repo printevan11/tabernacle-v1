@@ -3,8 +3,6 @@ import {
   LayoutDashboard,
   Music,
   ListMusic,
-  BookOpen,
-  Hash,
   Users,
   Sun,
   Moon,
@@ -19,9 +17,7 @@ export default function Sidebar({
   collapsed,
   toggleSidebar,
   theme,
-  toggleTheme,
-  openChordLib,
-  openNashville
+  toggleTheme
 }) {
   return (
     <div className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -58,20 +54,6 @@ export default function Sidebar({
           >
             <ListMusic size={17} />
             <span>Sunday Lineup</span>
-          </div>
-        </div>
-
-        <div className="divider"></div>
-
-        <div className="nav-group">
-          <div className="nav-label">Tools</div>
-          <div className="nav-item" onClick={openChordLib}>
-            <BookOpen size={17} />
-            <span>Chord Library</span>
-          </div>
-          <div className="nav-item" onClick={openNashville}>
-            <Hash size={17} />
-            <span>Nashville System</span>
           </div>
         </div>
 

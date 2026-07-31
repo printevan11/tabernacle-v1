@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Play, Edit3, Sliders, Music, Hash, FileText, Video, Mic } from 'lucide-react';
+import { ArrowLeft, Play, Edit3, Sliders, Music, FileText, Video, Mic } from 'lucide-react';
 import MetronomeCard from './MetronomeCard';
 import {
   CHROMATIC,
   normalizeChord,
   transposeChordFull,
-  chordToNashville,
   parseLyricsChords,
   isChordLine,
   extractYTId
@@ -19,7 +18,7 @@ export default function SongDetailView({
   openPromptModal
 }) {
   const [semitone, setSemitone] = useState(0);
-  const [viewMode, setViewMode] = useState('chords-lyrics'); // 'chords-lyrics', 'nashville-lyrics', 'lyrics-only'
+  const [viewMode, setViewMode] = useState('chords-lyrics'); // 'chords-lyrics' or 'lyrics-only'
 
   if (!song) {
     return (
@@ -69,31 +68,22 @@ export default function SongDetailView({
               if (isChordLine(line)) {
                 if (viewMode === 'lyrics-only') return null;
                 const words = line.trim().split(/\s+/);
-                if (viewMode === 'nashville-lyrics') {
-                  const nl = words.map(w => /^[A-G][b#]?/.test(w) ? chordToNashville(transposeChordFull(w, semitone), currentKey) : w).join('  ');
-                  return (
-                    <div key={lIdx} className="nashville-line" style={{ margin: '6px 0 0' }}>
-                      {nl.split('  ').map((n, i) => n ? <span key={i} className="nashville-numeral">{n}</span> : null)}
-                    </div>
-                  );
-                } else {
-                  const t = words.map(w => /^[A-G][b#]?/.test(w) ? transposeChordFull(w, semitone) : w).join('  ');
-                  return (
-                    <div
-                      key={lIdx}
-                      style={{
-                        fontSize: '13px',
-                        color: 'var(--text)',
-                        margin: '6px 0 0',
-                        letterSpacing: '.5px',
-                        whiteSpace: 'pre',
-                        fontWeight: 700
-                      }}
-                    >
-                      {t}
-                    </div>
-                  );
-                }
+                const t = words.map(w => /^[A-G][b#]?/.test(w) ? transposeChordFull(w, semitone) : w).join('  ');
+                return (
+                  <div
+                    key={lIdx}
+                    style={{
+                      fontSize: '13px',
+                      color: 'var(--text)',
+                      margin: '6px 0 0',
+                      letterSpacing: '.5px',
+                      whiteSpace: 'pre',
+                      fontWeight: 700
+                    }}
+                  >
+                    {t}
+                  </div>
+                );
               } else {
                 return (
                   <div
@@ -186,12 +176,6 @@ export default function SongDetailView({
             <Music size={13} style={{ display: 'inline', marginRight: '5px' }} /> Chords + Lyrics
           </button>
           <button
-            className={`view-mode-btn ${viewMode === 'nashville-lyrics' ? 'active' : ''}`}
-            onClick={() => setViewMode('nashville-lyrics')}
-          >
-            <Hash size={13} style={{ display: 'inline', marginRight: '5px' }} /> Nashville + Lyrics
-          </button>
-          <button
             className={`view-mode-btn ${viewMode === 'lyrics-only' ? 'active' : ''}`}
             onClick={() => setViewMode('lyrics-only')}
           >
@@ -229,7 +213,7 @@ export default function SongDetailView({
       <div className="card">
         <div className="section-header">
           <div className="section-title">
-            {viewMode === 'chords-lyrics' ? <><Music size={16} /> Lyrics & Chords</> : viewMode === 'nashville-lyrics' ? <><Hash size={16} /> Nashville + Lyrics</> : <><FileText size={16} /> Lyrics Only</>}
+            {viewMode === 'chords-lyrics' ? <><Music size={16} /> Lyrics & Chords</> : <><FileText size={16} /> Lyrics Only</>}
           </div>
         </div>
         {renderLyricsContent()}
