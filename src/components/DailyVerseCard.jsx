@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Sparkles, BookOpen } from 'lucide-react';
 
 const DAILY_VERSES = [
   { text: "Worship the Lord with gladness. Come before him, singing with joy.", ref: "Psalm 100:2 NLT" },
@@ -25,7 +26,9 @@ export default function DailyVerseCard() {
 
   return (
     <div className="verse-card">
-      <div className="verse-label">✦ Daily Verse</div>
+      <div className="verse-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Sparkles size={13} /> Daily Scripture Reflection
+      </div>
       <div className="verse-text">"{verse.text}"</div>
       <div className="verse-ref">— {verse.ref}</div>
     </div>
