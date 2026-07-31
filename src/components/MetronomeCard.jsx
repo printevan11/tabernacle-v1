@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Disc, Activity } from 'lucide-react';
 
 export default function MetronomeCard({ defaultBpm = 120 }) {
   const [bpm, setBpm] = useState(defaultBpm);
@@ -33,8 +33,8 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.frequency.value = isDownbeat ? 1000 : 800;
-      gain.gain.setValueAtTime(isDownbeat ? 0.5 : 0.3, ctx.currentTime);
+      osc.frequency.value = isDownbeat ? 1000 : 750;
+      gain.gain.setValueAtTime(isDownbeat ? 0.5 : 0.25, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
       osc.start(ctx.currentTime);
       osc.stop(ctx.currentTime + 0.05);
@@ -96,59 +96,85 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
 
   return (
     <div className="metronome-card">
-      <div className="section-header" style={{ marginBottom: '12px' }}>
-        <div className="section-title">🥁 Metronome</div>
-        <button className="metro-tap-btn" onClick={tapTempo}>Tap Tempo</button>
+      <div className="section-header" style={{ marginBottom: '14px' }}>
+        <div className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Activity size={17} /> Precision Studio Metronome
+        </div>
+        <span className={`badge ${isPlaying ? 'badge-green' : 'badge-gray'}`}>
+          {isPlaying ? '● LIVE CLICK' : 'STOPPED'}
+        </span>
       </div>
 
-      <div className="metro-display">
-        <div className="metro-bpm">{bpm}</div>
-        <div className="metro-bpm-label">BPM</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
+        {/* LEFT: DISPLAY & BEAT DOTS */}
+        <div className="metro-display" style={{ margin: '0', textAlign: 'left' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+            <div className="metro-bpm">{bpm}</div>
+            <div className="metro-bpm-label">BPM</div>
+          </div>
+
+          <div className="metro-beat-dots" style={{ justifyContent: 'flex-start', margin: '12px 0 0' }}>
+            {Array.from({ length: beatsPerMeasure }).map((_, idx) => (
+              <div
+                key={idx}
+                className={`metro-dot ${idx === 0 ? 'beat1' : ''} ${isPlaying && currentBeat === idx ? 'active' : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: PLAY BUTTON & CONTROLS */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
+          <div className="metro-controls" style={{ margin: '0', gap: '6px' }}>
+            <button className="metro-btn" onClick={() => changeBpm(-5)} title="-5 BPM">
+              <ChevronsLeft size={16} />
+            </button>
+            <button className="metro-btn" onClick={() => changeBpm(-1)} title="-1 BPM">
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              className={`metro-btn metro-play-btn ${isPlaying ? 'playing' : ''}`}
+              onClick={toggleMetronome}
+              title={isPlaying ? 'Pause' : 'Play'}
+            >
+              {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
+            </button>
+            <button className="metro-btn" onClick={() => changeBpm(1)} title="+1 BPM">
+              <ChevronRight size={16} />
+            </button>
+            <button className="metro-btn" onClick={() => changeBpm(5)} title="+5 BPM">
+              <ChevronsRight size={16} />
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div className="metro-time-btns">
+              {[2, 3, 4, 6].map((num) => (
+                <button
+                  key={num}
+                  className={`metro-time-btn ${beatsPerMeasure === num ? 'active' : ''}`}
+                  onClick={() => setBeatsPerMeasure(num)}
+                >
+                  {num}/4
+                </button>
+              ))}
+            </div>
+            <button className="metro-tap-btn" onClick={tapTempo}>
+              TAP TEMPO
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="metro-beat-dots">
-        {Array.from({ length: beatsPerMeasure }).map((_, i) => (
-          <div
-            key={i}
-            className={`metro-dot ${i === 0 ? 'beat1' : ''} ${isPlaying && currentBeat === i ? 'active' : ''}`}
-          />
-        ))}
-      </div>
-
-      <div className="metro-controls">
-        <button className="metro-btn" onClick={() => changeBpm(-5)}>«</button>
-        <button className="metro-btn" onClick={() => changeBpm(-1)}>‹</button>
-        <button
-          className={`metro-play-btn metro-btn ${isPlaying ? 'playing' : ''}`}
-          onClick={toggleMetronome}
-        >
-          {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '3px' }} />}
-        </button>
-        <button className="metro-btn" onClick={() => changeBpm(1)}>›</button>
-        <button className="metro-btn" onClick={() => changeBpm(5)}>»</button>
-      </div>
-
-      <div style={{ padding: '0 8px', marginBottom: '14px' }}>
+      <div style={{ marginTop: '14px' }}>
         <input
           type="range"
-          className="metro-bpm-slider"
           min="40"
           max="240"
           value={bpm}
           onChange={(e) => setBpm(parseInt(e.target.value))}
+          className="metro-bpm-slider"
         />
-      </div>
-
-      <div className="metro-time-btns">
-        {[4, 3, 6, 2].map((beats) => (
-          <button
-            key={beats}
-            className={`metro-time-btn ${beatsPerMeasure === beats ? 'active' : ''}`}
-            onClick={() => setBeatsPerMeasure(beats)}
-          >
-            {beats === 6 ? '6/8' : `${beats}/4`}
-          </button>
-        ))}
       </div>
     </div>
   );

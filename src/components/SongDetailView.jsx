@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Play, Edit3, Sliders, Music, FileText, Video, Mic } from 'lucide-react';
+import { ArrowLeft, Play, Edit3, Sliders, Music, FileText, Video, Mic, Plus, RotateCcw } from 'lucide-react';
 import MetronomeCard from './MetronomeCard';
 import {
   CHROMATIC,
@@ -62,7 +62,7 @@ export default function SongDetailView({
     return (
       <div className="chord-section">
         {sections.map((sec, sIdx) => (
-          <div key={sIdx} style={{ marginBottom: '14px' }}>
+          <div key={sIdx} style={{ marginBottom: '16px' }}>
             {sec.label && <div className="section-label">{sec.label}</div>}
             {sec.lines.map((line, lIdx) => {
               if (isChordLine(line)) {
@@ -73,11 +73,12 @@ export default function SongDetailView({
                   <div
                     key={lIdx}
                     style={{
-                      fontSize: '13px',
+                      fontSize: '13.5px',
                       color: 'var(--text)',
-                      margin: '6px 0 0',
-                      letterSpacing: '.5px',
-                      whiteSpace: 'pre',
+                      margin: '8px 0 3px',
+                      letterSpacing: '.6px',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
                       fontWeight: 700
                     }}
                   >
@@ -91,9 +92,10 @@ export default function SongDetailView({
                     style={{
                       fontSize: '13.5px',
                       color: 'var(--text2)',
-                      margin: '0 0 2px',
-                      lineHeight: 1.6,
-                      fontWeight: 400
+                      margin: '0 0 3px',
+                      lineHeight: 1.65,
+                      fontWeight: 400,
+                      wordBreak: 'break-word'
                     }}
                   >
                     {line || <br />}
@@ -115,39 +117,66 @@ export default function SongDetailView({
         <ArrowLeft size={16} /> Back to Library
       </div>
 
+      {/* SONG TITLE BANNER */}
       <div className="song-detail-header">
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div className="song-detail-title">{song.title}</div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
-              {song.artist && <span className="badge badge-blue"><Mic size={12} style={{ marginRight: '4px' }} /> {song.artist}</span>}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
+              {song.artist && (
+                <span className="badge badge-blue">
+                  <Mic size={12} style={{ marginRight: '4px' }} /> {song.artist}
+                </span>
+              )}
               <span className="badge badge-green">Key: {currentKey}</span>
+              {semitone !== 0 && (
+                <span className="badge badge-purple">
+                  Original: {originalKey} ({semitone > 0 ? `+${semitone}` : semitone})
+                </span>
+              )}
               <span className="badge badge-green">{song.category || 'Uncategorized'}</span>
               {song.bpm && <span className="badge badge-purple">♩ {song.bpm} BPM</span>}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
             <button className="btn btn-outline btn-sm" onClick={() => addToLineupDirect(song.id)}>
-              + Lineup
+              <Plus size={14} /> Lineup
             </button>
             <button className="btn btn-green btn-sm" onClick={() => openEditSongModal(song)}>
-              <Edit3 size={14} /> Edit
+              <Edit3 size={14} /> Edit Song
             </button>
           </div>
         </div>
       </div>
 
-      <div className="transpose-bar">
-        <div className="transpose-label" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Sliders size={14} /> Transpose:
+      {/* TRANSPOSE KEY CONSOLE */}
+      <div className="transpose-console">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div className="section-title" style={{ margin: '0' }}>
+            <Sliders size={16} /> Transpose Key
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="semitone-ctrl">
+              <button className="semitone-btn" onClick={() => handleTranspose(-1)} title="Transpose down 1 semitone">−</button>
+              <span className="semitone-val">{semitone >= 0 ? `+${semitone}` : semitone}</span>
+              <button className="semitone-btn" onClick={() => handleTranspose(1)} title="Transpose up 1 semitone">+</button>
+            </div>
+
+            {semitone !== 0 && (
+              <button className="btn btn-outline btn-sm" onClick={() => setSemitone(0)} title="Reset to original key">
+                <RotateCcw size={13} /> Reset
+              </button>
+            )}
+          </div>
         </div>
-        <div className="semitone-ctrl">
-          <button className="semitone-btn" onClick={() => handleTranspose(-1)}>−</button>
-          <span className="semitone-val">{semitone >= 0 ? `+${semitone}` : semitone}</span>
-          <button className="semitone-btn" onClick={() => handleTranspose(1)}>+</button>
+
+        <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+          Direct Key Selection:
         </div>
-        <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Key:</div>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+
+        <div className="key-grid">
           {CHROMATIC.map(k => (
             <button
               key={k}
@@ -158,39 +187,22 @@ export default function SongDetailView({
             </button>
           ))}
         </div>
-        <button
-          className="btn btn-outline btn-sm"
-          style={{ marginLeft: 'auto' }}
-          onClick={() => setSemitone(0)}
-        >
-          Reset
-        </button>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-        <div className="view-mode-bar">
-          <button
-            className={`view-mode-btn ${viewMode === 'chords-lyrics' ? 'active' : ''}`}
-            onClick={() => setViewMode('chords-lyrics')}
-          >
-            <Music size={13} style={{ display: 'inline', marginRight: '5px' }} /> Chords + Lyrics
-          </button>
-          <button
-            className={`view-mode-btn ${viewMode === 'lyrics-only' ? 'active' : ''}`}
-            onClick={() => setViewMode('lyrics-only')}
-          >
-            <FileText size={13} style={{ display: 'inline', marginRight: '5px' }} /> Lyrics Only
-          </button>
-        </div>
-      </div>
-
+      {/* PRECISION METRONOME */}
       <MetronomeCard defaultBpm={parseInt(song.bpm) || 120} />
 
+      {/* PRACTICE TRACK (YOUTUBE) */}
       <div className="card">
         <div className="section-header">
-          <div className="section-title"><Video size={16} /> Practice Track</div>
-          <button className="btn btn-outline btn-sm" onClick={openPromptModal}>Edit Link</button>
+          <div className="section-title">
+            <Video size={16} /> Practice Track (YouTube)
+          </div>
+          <button className="btn btn-outline btn-sm" onClick={openPromptModal}>
+            {song.ytLink ? 'Edit Link' : '+ Add Video Link'}
+          </button>
         </div>
+
         <div className="yt-container">
           {song.ytLink && ytId ? (
             <iframe
@@ -210,18 +222,37 @@ export default function SongDetailView({
         </div>
       </div>
 
+      {/* LYRICS & CHORDS DISPLAY */}
       <div className="card">
-        <div className="section-header">
+        <div className="section-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
           <div className="section-title">
-            {viewMode === 'chords-lyrics' ? <><Music size={16} /> Lyrics & Chords</> : <><FileText size={16} /> Lyrics Only</>}
+            {viewMode === 'chords-lyrics' ? <><Music size={16} /> Chords & Lyrics</> : <><FileText size={16} /> Lyrics Only</>}
+          </div>
+
+          <div className="view-mode-bar">
+            <button
+              className={`view-mode-btn ${viewMode === 'chords-lyrics' ? 'active' : ''}`}
+              onClick={() => setViewMode('chords-lyrics')}
+            >
+              <Music size={13} style={{ display: 'inline', marginRight: '5px' }} /> Chords + Lyrics
+            </button>
+            <button
+              className={`view-mode-btn ${viewMode === 'lyrics-only' ? 'active' : ''}`}
+              onClick={() => setViewMode('lyrics-only')}
+            >
+              <FileText size={13} style={{ display: 'inline', marginRight: '5px' }} /> Lyrics Only
+            </button>
           </div>
         </div>
+
         {renderLyricsContent()}
       </div>
 
       {song.notes && (
         <div className="card">
-          <div className="section-title" style={{ marginBottom: '10px' }}><FileText size={16} /> Song Notes</div>
+          <div className="section-title" style={{ marginBottom: '10px' }}>
+            <FileText size={16} /> Song Notes
+          </div>
           <div className="notes-box">{song.notes}</div>
         </div>
       )}
