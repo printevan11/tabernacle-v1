@@ -151,7 +151,7 @@ export default function App() {
 
   async function handleDeleteSong(id) {
     const song = songs.find(s => s.id === id);
-    const ok = await customConfirm(`Delete "${song ? song.title : 'this song'}"?`, '🗑️ Delete Song', 'Delete');
+    const ok = await customConfirm(`Delete "${song ? song.title : 'this song'}"?`, 'Delete Song', 'Delete');
     if (!ok) return;
     try {
       setSyncStatus('syncing');
@@ -170,6 +170,7 @@ export default function App() {
   async function handleSaveLineupItem(item) {
     const newLineup = [...lineup, item];
     const s = songs.find(x => x.id === item.songId);
+    setLineup(newLineup);
     await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotes, team: lineupTeam });
     showToast(`"${s ? s.title : 'Song'}" added!`, 'success');
   }
@@ -181,6 +182,7 @@ export default function App() {
     }
     const s = songs.find(x => x.id === songId);
     const newLineup = [...lineup, { songId, key: s ? s.key : 'C' }];
+    setLineup(newLineup);
     await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotes, team: lineupTeam });
     showToast(`"${s ? s.title : 'Song'}" added to lineup!`, 'success');
   }
@@ -190,21 +192,24 @@ export default function App() {
     const ni = idx + dir;
     if (ni < 0 || ni >= arr.length) return;
     [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
+    setLineup(arr);
     await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotes, team: lineupTeam });
   }
 
   async function handleRemoveFromLineup(idx) {
     const arr = [...lineup];
     arr.splice(idx, 1);
+    setLineup(arr);
     await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotes, team: lineupTeam });
     showToast('Removed from lineup', 'success');
   }
 
   async function handleClearLineup() {
-    const ok = await customConfirm('Clear all songs from lineup?', '🗑️ Clear Lineup', 'Clear');
+    const ok = await customConfirm('Clear all songs from Sunday lineup?', 'Clear Lineup', 'Clear All');
     if (!ok) return;
+    setLineup([]);
     await fbSetDoc('config', 'lineup', { items: [], notes: lineupNotes, team: lineupTeam });
-    showToast('Lineup cleared', 'success');
+    showToast('Lineup cleared!', 'success');
   }
 
   async function handleSaveLineupNotes(notes) {
@@ -234,7 +239,7 @@ export default function App() {
 
   async function handleDeleteMember(id) {
     const m = members.find(x => x.id === id);
-    const ok = await customConfirm(`Remove ${m ? m.name : 'this member'} from the team?`, '🗑️ Remove Member', 'Remove');
+    const ok = await customConfirm(`Remove ${m ? m.name : 'this member'} from the team?`, 'Remove Member', 'Remove');
     if (!ok) return;
     const newLineupTeam = lineupTeam.filter(mid => mid !== id);
     await fbDelete('members', id);

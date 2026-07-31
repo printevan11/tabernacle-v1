@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Trash2, Eye } from 'lucide-react';
+import { Search, Plus, Trash2, Eye, X } from 'lucide-react';
 
 export default function SongsView({
   songs,
@@ -59,6 +59,23 @@ export default function SongsView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--muted)',
+                cursor: 'pointer',
+                padding: '2px 4px',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+              title="Clear search"
+            >
+              <X size={15} />
+            </button>
+          )}
         </div>
 
         <div className="cat-pills">
@@ -68,13 +85,22 @@ export default function SongsView({
               className={`cat-pill ${catFilter === cat ? 'active' : ''}`}
               onClick={() => setCatFilter(cat)}
             >
-              {cat === 'all' ? 'All' : cat}
+              {cat === 'all' ? 'All Categories' : cat}
             </div>
           ))}
+          {catFilter !== 'all' && (
+            <div
+              className="cat-pill"
+              onClick={() => setCatFilter('all')}
+              style={{ color: '#FF4444', borderColor: '#FF4444' }}
+            >
+              ✕ Clear Filter
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
+      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
         {filteredSongs.length === 0 ? (
           <div className="empty" style={{ gridColumn: '1 / -1' }}>
             <div className="empty-icon">🎵</div>
@@ -82,49 +108,22 @@ export default function SongsView({
           </div>
         ) : (
           filteredSongs.map((s) => (
-            <div
-              key={s.id}
-              className="song-card"
-              onClick={() => navigate('song-detail', s.id)}
-            >
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                <div className="song-title">{s.title}</div>
-                <span className="badge badge-green" style={{ flexShrink: 0 }}>
-                  {s.key || '?'}
-                </span>
+            <div key={s.id} className="song-card" onClick={() => navigate('song-detail', s.id)}>
+              <div className="song-title">{s.title}</div>
+              <div className="song-meta">
+                {s.artist && <span>{s.artist}</span>}
+                <span className={`badge badge-${catBadge(s.category)}`}>{s.category || 'Uncategorized'}</span>
+                <span className="badge badge-green">Key: {s.key || '?'}</span>
               </div>
-
-              <div className="song-meta" style={{ marginTop: '6px' }}>
-                {s.artist && <span>🎤 {s.artist}</span>}
-                <span className={`badge badge-${catBadge(s.category)}`}>
-                  {s.category || 'Uncategorized'}
-                </span>
-              </div>
-
-              {s.bpm && (
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px', fontWeight: 500 }}>
-                  ♩ {s.bpm} BPM
-                </div>
-              )}
-
               <div className="song-actions" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className="btn btn-outline btn-sm"
-                  onClick={() => navigate('song-detail', s.id)}
-                >
-                  View
+                <button className="btn btn-outline btn-sm" onClick={() => navigate('song-detail', s.id)}>
+                  <Eye size={13} /> View
                 </button>
-                <button
-                  className="btn btn-outline btn-sm"
-                  onClick={() => addToLineupDirect(s.id)}
-                >
+                <button className="btn btn-outline btn-sm" onClick={() => addToLineupDirect(s.id)}>
                   + Lineup
                 </button>
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => deleteSong(s.id)}
-                >
-                  ✕
+                <button className="btn btn-danger btn-sm btn-icon" onClick={() => deleteSong(s.id)}>
+                  <Trash2 size={13} />
                 </button>
               </div>
             </div>
