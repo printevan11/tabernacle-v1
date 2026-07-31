@@ -101,33 +101,46 @@ export default function ProfileOverlay({
       showToast('Photo must be under 5MB', 'error');
       return;
     }
-    const b64 = await fileToBase64(file);
-    const resized = await resizeImage(b64, 800);
-    setComposeImg(resized);
+    try {
+      const b64 = await fileToBase64(file);
+      const resized = await resizeImage(b64, 800);
+      setComposeImg(resized);
+    } catch (err) {
+      showToast('Failed to process photo', 'error');
+    }
+    e.target.value = '';
   }
 
-  async function submitPost() {
-    if (!composeText.trim() && !composeImg) {
-      showToast('Post cannot be empty', 'error');
-      return;
-    }
-    showToast('Posting...', 'info');
+  async function handleCreatePost(e) {
+    e.preventDefault();
+    if (!composeText.trim() && !composeImg) return;
+    showToast('Posting update...', 'info');
     try {
       await fbAdd('posts', {
         memberId: member.id,
-        authorName: member.name,
-        authorPhoto: member.photo || '',
-        text: composeText.trim(),
+        memberName: member.name,
+        memberRole: member.role,
+        memberPhoto: member.photo || '',
+        content: composeText.trim(),
         image: composeImg || '',
-        likes: []
+        likes: [],
+        commentsCount: 0
       });
       setComposeText('');
       setComposeImg(null);
       setIsComposerExpanded(false);
-      showToast('Post created!', 'success');
+      showToast('Post published!', 'success');
     } catch (err) {
-      showToast('Failed to create post', 'error');
+      showToast('Failed to publish post', 'error');
     }
+  }
+
+  async function toggleLike(post) {
+    const likes = post.likes || [];
+    const currentUserId = 'user_me';
+    const isLiked = likes.includes(currentUserId);
+    const updated = isLiked ? likes.filter(id => id !== currentUserId) : [...likes, currentUserId];
+    await fbUpdate('posts', post.id, { likes: updated });
   }
 
   async function deletePost(postId) {
@@ -137,23 +150,90 @@ export default function ProfileOverlay({
     showToast('Post deleted', 'success');
   }
 
+  const topBtnStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: '6px',
+    color: 'var(--text)',
+    padding: '6px 12px',
+    cursor: 'pointer',
+    fontSize: '12px',
+    fontWeight: 700,
+    zIndex: 20
+  };
+
   return (
     <>
-      <div className="profile-overlay open" onClick={(e) => e.target.classList.contains('profile-overlay') && onClose()}>
-        <div className="profile-sheet">
-          <div className="profile-cover-wrap">
+      <div
+        className="profile-overlay open"
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.85)',
+          backdropFilter: 'blur(12px)',
+          zIndex: 1500,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px'
+        }}
+        onClick={(e) => e.target.classList.contains('profile-overlay') && onClose()}
+      >
+        <div
+          className="profile-sheet"
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '680px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: 'var(--shadow-lg)',
+            margin: 'auto'
+          }}
+        >
+          {/* COVER HEADER WITH SEPARATED ACTION BUTTONS */}
+          <div
+            style={{
+              position: 'relative',
+              height: '160px',
+              flexShrink: 0,
+              background: 'var(--surface2)',
+              borderBottom: '1px solid var(--border)'
+            }}
+          >
             {member.coverPhoto ? (
-              <img className="profile-cover-img" src={member.coverPhoto} alt="Cover" />
+              <img
+                src={member.coverPhoto}
+                alt="Cover"
+                style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block' }}
+              />
             ) : (
-              <div className="profile-cover-placeholder">
+              <div
+                style={{
+                  width: '100%',
+                  height: '160px',
+                  background: 'var(--surface2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
                 <div style={{ fontSize: '42px', opacity: 0.15 }}>🎵</div>
               </div>
             )}
-            <div className="profile-cover-overlay"></div>
-            <button className="cover-change-btn" onClick={() => coverInputRef.current?.click()}>
+            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.7) 100%)' }} />
+
+            <button type="button" style={{ ...topBtnStyle, position: 'absolute', top: '12px', right: '12px' }} onClick={() => coverInputRef.current?.click()}>
               <Camera size={14} /> Cover
             </button>
-            <button className="close-profile-btn" onClick={onClose}>
+            <button type="button" style={{ ...topBtnStyle, position: 'absolute', top: '12px', left: '12px' }} onClick={onClose}>
               <X size={14} /> Close
             </button>
             <input
@@ -165,22 +245,49 @@ export default function ProfileOverlay({
             />
           </div>
 
-          <div className="profile-avatar-section">
-            <div className="profile-avatar-circle" onClick={() => avatarInputRef.current?.click()}>
+          {/* AVATAR CIRCLE & PROFILE ACTION HEADER */}
+          <div
+            style={{
+              position: 'relative',
+              padding: '0 20px',
+              marginTop: '-40px',
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'space-between',
+              gap: '10px',
+              flexWrap: 'wrap',
+              zIndex: 10
+            }}
+          >
+            <div
+              style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                border: '4px solid var(--surface)',
+                overflow: 'hidden',
+                flexShrink: 0,
+                cursor: 'pointer',
+                position: 'relative',
+                background: 'var(--surface2)'
+              }}
+              onClick={() => avatarInputRef.current?.click()}
+            >
               {member.photo ? (
-                <img src={member.photo} alt={member.name} />
+                <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} />
               ) : (
-                <div className="avatar-initials" style={{ background: 'var(--surface2)', color: 'var(--text)' }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>
                   {member.name ? member.name[0] : '?'}
                 </div>
               )}
-              <div className="profile-avatar-edit-hint"><Camera size={18} /></div>
             </div>
-            <div className="profile-header-actions">
+
+            <div style={{ display: 'flex', gap: '8px', paddingBottom: '4px', flexWrap: 'wrap' }}>
               <button className="btn btn-outline btn-sm" onClick={() => openEditProfileModal(member)}>
                 <Edit3 size={14} /> Edit Profile
               </button>
             </div>
+
             <input
               type="file"
               ref={avatarInputRef}
@@ -190,19 +297,22 @@ export default function ProfileOverlay({
             />
           </div>
 
-          <div className="profile-body">
-            <div className="profile-name">{member.name}</div>
-            <div className="profile-role-badge" style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+          {/* PROFILE BODY */}
+          <div style={{ padding: '16px 20px 24px', flex: 1 }}>
+            <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', marginTop: '4px', letterSpacing: '-0.5px' }}>
+              {member.name}
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', marginTop: '6px', padding: '4px 12px', borderRadius: '4px', fontSize: '11px', fontWeight: 700, background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)' }}>
               {member.role}
             </div>
 
             {member.bio ? (
-              <div className="profile-bio">{member.bio}</div>
+              <div style={{ fontSize: '13px', color: 'var(--text2)', marginTop: '12px', lineHeight: 1.6 }}>{member.bio}</div>
             ) : (
-              <div className="profile-bio-empty">No bio yet. Tap Edit Profile to add one.</div>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', fontStyle: 'italic', marginTop: '12px' }}>No bio yet. Tap Edit Profile to add one.</div>
             )}
 
-            <div className="profile-contact-row">
+            <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
               {member.email && <div className="profile-contact-item"><Mail size={12} /> {member.email}</div>}
               {member.phone && <div className="profile-contact-item"><Phone size={12} /> {member.phone}</div>}
             </div>
@@ -214,21 +324,38 @@ export default function ProfileOverlay({
               </>
             )}
 
+            {/* PHOTOS GRID */}
             <div className="profile-section-title">
               <Camera size={12} style={{ display: 'inline', marginRight: '4px' }} /> Photos <span style={{ color: 'var(--muted)', fontSize: '11px', fontWeight: 400, textTransform: 'none' }}>({(member.photos || []).length})</span>
             </div>
-            <div className="profile-photos-grid">
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {(member.photos || []).map((photo, i) => (
-                <div key={i} className="profile-photo-thumb">
-                  <img src={photo} alt={`Photo ${i + 1}`} onClick={() => setLightboxImg(photo)} />
+                <div key={i} style={{ aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', position: 'relative', background: 'var(--surface2)', border: '1px solid var(--border)', cursor: 'pointer' }}>
+                  <img src={photo} alt={`Photo ${i + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} onClick={() => setLightboxImg(photo)} />
                   <button className="photo-delete-btn" onClick={() => deletePhoto(i)}>✕</button>
                 </div>
               ))}
-              <div className="photo-add-tile" onClick={() => photoInputRef.current?.click()}>
+              <div
+                style={{
+                  aspectRatio: '1',
+                  borderRadius: '8px',
+                  border: '1.5px dashed var(--border)',
+                  background: 'var(--surface2)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => photoInputRef.current?.click()}
+              >
                 <Plus size={20} style={{ opacity: 0.6 }} />
                 <div style={{ fontSize: '10px', color: 'var(--muted)', fontWeight: 500 }}>Add Photo</div>
               </div>
             </div>
+
             <input
               type="file"
               ref={photoInputRef}
@@ -236,94 +363,109 @@ export default function ProfileOverlay({
               style={{ display: 'none' }}
               onChange={handleProfilePhoto}
             />
-          </div>
 
-          <div className="post-feed-section">
-            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text2)', letterSpacing: '.5px', textTransform: 'uppercase', marginBottom: '10px' }}>
-              <FileText size={12} style={{ display: 'inline', marginRight: '4px' }} /> Posts
+            {/* FEED / UPDATES */}
+            <div className="profile-section-title" style={{ marginTop: '24px' }}>
+              <MessageSquare size={12} style={{ display: 'inline', marginRight: '4px' }} /> Updates & Feed
             </div>
 
-            <div className="inline-composer">
-              <div className="composer-row">
-                <div className="composer-avatar-sm">
-                  {member.photo ? (
-                    <img src={member.photo} alt={member.name} style={{ borderRadius: '50%' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--surface2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)', fontWeight: 800 }}>
-                      {member.name ? member.name[0] : '?'}
-                    </div>
-                  )}
-                </div>
-                <div className="composer-trigger" onClick={() => setIsComposerExpanded(true)}>
-                  What's on your mind, {member.name.split(' ')[0]}?
-                </div>
+            {/* POST COMPOSER */}
+            {!isComposerExpanded ? (
+              <div
+                style={{
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '8px',
+                  padding: '12px 14px',
+                  fontSize: '13px',
+                  color: 'var(--muted)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onClick={() => setIsComposerExpanded(true)}
+              >
+                <Edit3 size={14} /> Post an update or note to team...
               </div>
+            ) : (
+              <form onSubmit={handleCreatePost} style={{ display: 'flex', flexDirection: 'column', gap: '10px', background: 'var(--surface2)', padding: '14px', borderRadius: '8px', border: '1px solid var(--border-hover)' }}>
+                <textarea
+                  value={composeText}
+                  onChange={(e) => setComposeText(e.target.value)}
+                  placeholder="Share a message with the team..."
+                  style={{ minHeight: '80px' }}
+                  autoFocus
+                />
+                {composeImg && (
+                  <div style={{ position: 'relative', width: 'fit-content' }}>
+                    <img src={composeImg} alt="Preview" style={{ maxHeight: '120px', borderRadius: '6px', border: '1px solid var(--border)' }} />
+                    <button type="button" className="photo-delete-btn" onClick={() => setComposeImg(null)}>✕</button>
+                  </div>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={() => composeImgInputRef.current?.click()}>
+                    <Camera size={13} /> Add Photo
+                  </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => setIsComposerExpanded(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-green btn-sm">Post Update</button>
+                  </div>
+                </div>
+                <input type="file" ref={composeImgInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleComposeImg} />
+              </form>
+            )}
 
-              {isComposerExpanded && (
-                <div className="composer-expanded">
-                  <textarea
-                    className="composer-textarea"
-                    placeholder="Share something with the team..."
-                    rows={3}
-                    value={composeText}
-                    onChange={(e) => setComposeText(e.target.value)}
-                  />
-                  {composeImg && (
-                    <div>
-                      <img src={composeImg} style={{ maxWidth: '100%', borderRadius: 'var(--radius-sm)', maxHeight: '180px', objectFit: 'cover' }} alt="Preview" />
-                      <button className="btn btn-danger btn-sm" style={{ marginTop: '6px' }} onClick={() => setComposeImg(null)}>✕ Remove</button>
-                    </div>
-                  )}
-                  <div className="composer-bottom-row">
-                    <button className="btn btn-outline btn-sm" onClick={() => composeImgInputRef.current?.click()}>
-                      <Camera size={14} /> Photo
-                    </button>
-                    <input
-                      type="file"
-                      ref={composeImgInputRef}
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={handleComposeImg}
-                    />
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button className="btn btn-outline btn-sm" onClick={() => setIsComposerExpanded(false)}>
-                        Cancel
+            {/* MEMBER POSTS LIST */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '14px' }}>
+              {memberPosts.length === 0 ? (
+                <div className="empty" style={{ padding: '16px 0' }}>
+                  <div className="empty-text">No updates posted yet</div>
+                </div>
+              ) : (
+                memberPosts.map(p => (
+                  <div key={p.id} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '14px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 800 }}>{p.memberName}</div>
+                      <button className="btn btn-danger btn-icon" style={{ width: '26px', height: '26px' }} onClick={() => deletePost(p.id)} title="Delete post">
+                        <Trash2 size={12} />
                       </button>
-                      <button className="btn btn-green btn-sm" onClick={submitPost}>
-                        Post
+                    </div>
+
+                    <div style={{ fontSize: '13px', color: 'var(--text)', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                      {p.content}
+                    </div>
+
+                    {p.image && (
+                      <img src={p.image} alt="Post image" style={{ width: '100%', maxHeight: '300px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border)' }} onClick={() => setLightboxImg(p.image)} />
+                    )}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingTop: '6px', borderTop: '1px solid var(--border)' }}>
+                      <button
+                        type="button"
+                        style={{ background: 'transparent', border: 'none', color: (p.likes || []).includes('user_me') ? '#FF4444' : 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 700 }}
+                        onClick={() => toggleLike(p)}
+                      >
+                        <Heart size={14} fill={(p.likes || []).includes('user_me') ? '#FF4444' : 'none'} /> {(p.likes || []).length}
                       </button>
                     </div>
                   </div>
-                </div>
+                ))
               )}
             </div>
-
-            {memberPosts.map(post => (
-              <div key={post.id} className="post-card">
-                <div className="post-header">
-                  <div className="post-avatar">
-                    {post.authorPhoto ? (
-                      <img src={post.authorPhoto} alt={post.authorName} />
-                    ) : (
-                      <div>{post.authorName ? post.authorName[0] : '?'}</div>
-                    )}
-                  </div>
-                  <div className="post-author">
-                    <div className="post-author-name">{post.authorName}</div>
-                  </div>
-                  <button className="post-menu-btn" onClick={() => deletePost(post.id)}>✕</button>
-                </div>
-                {post.text && <div className="post-text">{post.text}</div>}
-                {post.image && <img className="post-image" src={post.image} alt="Post media" />}
-              </div>
-            ))}
           </div>
         </div>
       </div>
 
+      {/* LIGHTBOX MODAL */}
       {lightboxImg && (
-        <div className="profile-photo-lightbox open" onClick={() => setLightboxImg(null)}>
-          <img src={lightboxImg} alt="Lightbox" />
+        <div className="modal-overlay open" onClick={() => setLightboxImg(null)} style={{ zIndex: 3000 }}>
+          <div style={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh' }}>
+            <img src={lightboxImg} alt="Enlarged" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+            <button className="photo-delete-btn" style={{ top: '-12px', right: '-12px', width: '32px', height: '32px', fontSize: '16px' }} onClick={() => setLightboxImg(null)}>
+              ✕
+            </button>
+          </div>
         </div>
       )}
     </>

@@ -111,6 +111,21 @@ export default function SongDetailView({
 
   const ytId = extractYTId(song.ytLink);
 
+  const keyBtnStyle = (isActive) => ({
+    height: '38px',
+    borderRadius: '6px',
+    border: isActive ? '1px solid var(--text)' : '1px solid var(--border)',
+    background: isActive ? 'var(--text)' : 'var(--surface2)',
+    color: isActive ? 'var(--bg)' : 'var(--text2)',
+    fontSize: '12px',
+    fontWeight: isActive ? 800 : 700,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    touchAction: 'manipulation'
+  });
+
   return (
     <div className="page active">
       <div className="back-btn" onClick={() => navigate('songs')}>
@@ -166,7 +181,7 @@ export default function SongDetailView({
         </div>
       </div>
 
-      {/* TRANSPOSE KEY CONSOLE */}
+      {/* TRANSPOSE KEY CONSOLE WITH INLINE GRID BUTTONS */}
       <div className="transpose-console">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
           <div className="section-title" style={{ margin: '0' }}>
@@ -192,11 +207,12 @@ export default function SongDetailView({
           Direct Key Selection:
         </div>
 
-        <div className="key-grid">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))', gap: '6px' }}>
           {CHROMATIC.map(k => (
             <button
               key={k}
-              className={`key-btn ${k === currentKey ? 'active' : ''}`}
+              type="button"
+              style={keyBtnStyle(k === currentKey)}
               onClick={() => handleSetKey(k)}
             >
               {k}
@@ -238,40 +254,28 @@ export default function SongDetailView({
         </div>
       </div>
 
-      {/* LYRICS & CHORDS DISPLAY */}
-      <div className="card">
-        <div className="section-header" style={{ flexWrap: 'wrap', gap: '10px' }}>
-          <div className="section-title">
-            {viewMode === 'chords-lyrics' ? <><Music size={16} /> Chords & Lyrics</> : <><FileText size={16} /> Lyrics Only</>}
-          </div>
-
-          <div className="view-mode-bar">
-            <button
-              className={`view-mode-btn ${viewMode === 'chords-lyrics' ? 'active' : ''}`}
-              onClick={() => setViewMode('chords-lyrics')}
-            >
-              <Music size={13} style={{ display: 'inline', marginRight: '5px' }} /> Chords + Lyrics
-            </button>
-            <button
-              className={`view-mode-btn ${viewMode === 'lyrics-only' ? 'active' : ''}`}
-              onClick={() => setViewMode('lyrics-only')}
-            >
-              <FileText size={13} style={{ display: 'inline', marginRight: '5px' }} /> Lyrics Only
-            </button>
-          </div>
+      {/* CHORDS & LYRICS DISPLAY */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+        <div className="section-title" style={{ margin: 0 }}>
+          <Music size={16} /> Chords & Lyrics ({viewMode === 'chords-lyrics' ? 'Full Chords' : 'Lyrics Only'})
         </div>
-
-        {renderLyricsContent()}
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            className={`btn btn-sm ${viewMode === 'chords-lyrics' ? 'btn-green' : 'btn-outline'}`}
+            onClick={() => setViewMode('chords-lyrics')}
+          >
+            Chords + Lyrics
+          </button>
+          <button
+            className={`btn btn-sm ${viewMode === 'lyrics-only' ? 'btn-green' : 'btn-outline'}`}
+            onClick={() => setViewMode('lyrics-only')}
+          >
+            Lyrics Only
+          </button>
+        </div>
       </div>
 
-      {song.notes && (
-        <div className="card">
-          <div className="section-title" style={{ marginBottom: '10px' }}>
-            <FileText size={16} /> Song Notes
-          </div>
-          <div className="notes-box">{song.notes}</div>
-        </div>
-      )}
+      {renderLyricsContent()}
     </div>
   );
 }

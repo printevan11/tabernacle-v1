@@ -118,12 +118,24 @@ export default function LineupView({
                   const m = members.find(x => x.id === mid);
                   if (!m) return null;
                   return (
-                    <div key={mid} className="member-tag" style={{ justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="member-dot"></div>
-                        <span style={{ fontWeight: 700 }}>{m.name}</span>
+                    <div
+                      key={mid}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        background: 'var(--surface2)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        width: '100%'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--text)', boxShadow: '0 0 6px var(--primary-glow)' }} />
+                        <span style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--text)' }}>{m.name}</span>
                       </div>
-                      <span className="badge badge-gray" style={{ fontSize: '11px' }}>
+                      <span className="badge badge-gray" style={{ fontSize: '11px', padding: '3px 10px', textTransform: 'uppercase' }}>
                         {m.role}
                       </span>
                     </div>
