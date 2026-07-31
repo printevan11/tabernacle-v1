@@ -94,7 +94,7 @@ export default function SongsView({
       </div>
 
       {/* SONG CARDS GRID */}
-      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
+      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))', gap: '16px' }}>
         {filteredSongs.length === 0 ? (
           <div className="empty" style={{ gridColumn: '1 / -1' }}>
             <div className="empty-icon">🎵</div>

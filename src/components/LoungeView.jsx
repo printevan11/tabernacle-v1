@@ -386,8 +386,8 @@ export default function LoungeView({ members }) {
                 style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('w')}
                 onMouseUp={() => handleTouchEnd('w')}
-                onTouchStart={() => handleTouchStart('w')}
-                onTouchEnd={() => handleTouchEnd('w')}
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('w'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('w'); }}
                 title="Up"
               >
                 <ArrowUp size={18} />
@@ -399,8 +399,8 @@ export default function LoungeView({ members }) {
                 style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('a')}
                 onMouseUp={() => handleTouchEnd('a')}
-                onTouchStart={() => handleTouchStart('a')}
-                onTouchEnd={() => handleTouchEnd('a')}
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('a'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('a'); }}
                 title="Left"
               >
                 <ArrowLeft size={18} />
@@ -410,8 +410,8 @@ export default function LoungeView({ members }) {
                 style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('s')}
                 onMouseUp={() => handleTouchEnd('s')}
-                onTouchStart={() => handleTouchStart('s')}
-                onTouchEnd={() => handleTouchEnd('s')}
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('s'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('s'); }}
                 title="Down"
               >
                 <ArrowDown size={18} />
@@ -421,8 +421,8 @@ export default function LoungeView({ members }) {
                 style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('d')}
                 onMouseUp={() => handleTouchEnd('d')}
-                onTouchStart={() => handleTouchStart('d')}
-                onTouchEnd={() => handleTouchEnd('d')}
+                onTouchStart={(e) => { e.preventDefault(); handleTouchStart('d'); }}
+                onTouchEnd={(e) => { e.preventDefault(); handleTouchEnd('d'); }}
                 title="Right"
               >
                 <ArrowRight size={18} />

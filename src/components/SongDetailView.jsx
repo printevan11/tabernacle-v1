@@ -207,7 +207,7 @@ export default function SongDetailView({
           Direct Key Selection:
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(50px, 1fr))', gap: '6px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 46px), 1fr))', gap: '6px' }}>
           {CHROMATIC.map(k => (
             <button
               key={k}

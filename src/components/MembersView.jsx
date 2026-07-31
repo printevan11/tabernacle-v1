@@ -51,7 +51,7 @@ export default function MembersView({
         </button>
       </div>
 
-      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 250px), 1fr))' }}>
         {members.length === 0 ? (
           <div className="empty" style={{ gridColumn: '1 / -1' }}>
             <div className="empty-icon"><Users size={32} /></div>
