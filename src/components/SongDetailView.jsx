@@ -134,7 +134,7 @@ export default function SongDetailView({
 
       {/* STUDIO HERO SONG TITLE HEADER */}
       <div className="song-detail-header">
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+        <div className="song-detail-header-row" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <Disc size={16} style={{ color: 'var(--muted)' }} />
@@ -170,9 +170,9 @@ export default function SongDetailView({
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
+          <div className="song-detail-header-actions" style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
             <button className="btn btn-outline" onClick={() => addToLineupDirect(song.id)}>
-              <Plus size={15} /> + Lineup
+              <Plus size={15} /> Lineup
             </button>
             <button className="btn btn-green" onClick={() => openEditSongModal(song)}>
               <Edit3 size={15} /> Edit Song
