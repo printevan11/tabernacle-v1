@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import DailyVerseCard from './DailyVerseCard';
-import { Music, Users, Plus, Sparkles, ListMusic, Tag, History } from 'lucide-react';
+import { Music, Users, Plus, Sparkles, ListMusic, Tag, History, ChevronRight, Mic, ArrowUpRight } from 'lucide-react';
 
 export default function DashboardView({
   songs,
@@ -70,6 +70,7 @@ export default function DashboardView({
         </div>
       </div>
 
+      {/* SUNDAY WORSHIP LINEUP */}
       <div className="card">
         <div className="section-header">
           <div className="section-title"><ListMusic size={16} /> Sunday Worship Lineup</div>
@@ -89,7 +90,7 @@ export default function DashboardView({
               ))}
             </div>
             {lineup.length > 4 && (
-              <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', marginTop: '8px', fontWeight: 500 }}>
+              <div style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', marginTop: '10px', fontWeight: 500 }}>
                 +{lineup.length - 4} more songs in lineup
               </div>
             )}
@@ -103,11 +104,12 @@ export default function DashboardView({
       </div>
 
       <div className="grid-2">
+        {/* SONG CATEGORIES */}
         <div className="card">
           <div className="section-header">
             <div className="section-title"><Tag size={16} /> Song Categories</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
             {Object.keys(categoriesCount).length === 0 ? (
               <div className="empty" style={{ gridColumn: '1 / -1' }}>
                 <div className="empty-text">No songs yet</div>
@@ -120,17 +122,19 @@ export default function DashboardView({
                     background: 'var(--surface2)',
                     border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)',
-                    padding: '12px',
+                    padding: '14px 12px',
                     textAlign: 'center',
                     cursor: 'pointer',
                     transition: 'all .15s ease'
                   }}
                   onClick={() => navigate('songs')}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--border-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
                 >
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-1px' }}>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-1px' }}>
                     {count}
                   </div>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px', fontWeight: 500 }}>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px', fontWeight: 600 }}>
                     {cat}
                   </div>
                 </div>
@@ -139,10 +143,13 @@ export default function DashboardView({
           </div>
         </div>
 
+        {/* RECENTLY ADDED SONGS */}
         <div className="card">
           <div className="section-header">
-            <div className="section-title"><History size={16} /> Recently Added</div>
-            <button className="btn btn-outline btn-sm" onClick={() => navigate('songs')}>View All</button>
+            <div className="section-title"><History size={16} /> Recently Added Songs</div>
+            <button className="btn btn-outline btn-sm" onClick={() => navigate('songs')}>
+              View All <ArrowUpRight size={12} />
+            </button>
           </div>
           {recentSongs.length === 0 ? (
             <div className="empty">
@@ -150,16 +157,66 @@ export default function DashboardView({
               <div className="empty-text">No songs in library yet</div>
             </div>
           ) : (
-            recentSongs.map((s) => (
-              <div key={s.id} className="lineup-song" onClick={() => navigate('song-detail', s.id)}>
-                <Music size={16} style={{ color: 'var(--text2)' }} />
-                <div className="lineup-info">
-                  <div className="lineup-title">{s.title}</div>
-                  <div className="lineup-key">{s.key || '?'} • {s.category || 'Uncategorized'}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {recentSongs.map((s) => (
+                <div
+                  key={s.id}
+                  onClick={() => navigate('song-detail', s.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 14px',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                    transition: 'all .15s ease'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--border-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                >
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: 'var(--radius-xs)',
+                      background: 'var(--surface3)',
+                      border: '1px solid var(--border)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'var(--text)',
+                      flexShrink: 0
+                    }}
+                  >
+                    <Music size={16} />
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {s.title}
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', flexWrap: 'wrap' }}>
+                      {s.artist && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <Mic size={10} /> {s.artist}
+                        </span>
+                      )}
+                      <span>{s.category || 'Uncategorized'}</span>
+                      {s.bpm && <span>♩ {s.bpm} BPM</span>}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <span className="badge badge-green" style={{ fontSize: '11px', padding: '3px 8px' }}>
+                      Key: {s.key || '?'}
+                    </span>
+                    <ChevronRight size={15} style={{ color: 'var(--muted)' }} />
+                  </div>
                 </div>
-                <span className="badge badge-green">{s.key || '?'}</span>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
       </div>
