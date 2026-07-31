@@ -33,10 +33,47 @@ export default function App() {
   const [songs, setSongs] = useState([]);
   const [members, setMembers] = useState([]);
   const [allPosts, setAllPosts] = useState([]);
-  const [lineup, setLineup] = useState([]);
-  const [lineupNotes, setLineupNotes] = useState('');
-  const [lineupTeam, setLineupTeam] = useState([]);
+  const [lineup, setLineup] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tabernacle-lineup')) || [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [lineupNotes, setLineupNotes] = useState(() => localStorage.getItem('tabernacle-lineup-notes') || '');
+  const [lineupTeam, setLineupTeam] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('tabernacle-lineup-team')) || [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [activeSongId, setActiveSongId] = useState(null);
+
+  // Synchronous refs to prevent stale closure state when adding multiple songs sequentially
+  const lineupRef = React.useRef(lineup);
+  const lineupNotesRef = React.useRef(lineupNotes);
+  const lineupTeamRef = React.useRef(lineupTeam);
+
+  function updateLineupState(items, notes, team) {
+    const finalItems = items || [];
+    const finalNotes = notes !== undefined ? notes : lineupNotesRef.current;
+    const finalTeam = team || [];
+
+    lineupRef.current = finalItems;
+    lineupNotesRef.current = finalNotes;
+    lineupTeamRef.current = finalTeam;
+
+    setLineup(finalItems);
+    setLineupNotes(finalNotes);
+    setLineupTeam(finalTeam);
+
+    try {
+      localStorage.setItem('tabernacle-lineup', JSON.stringify(finalItems));
+      localStorage.setItem('tabernacle-lineup-notes', finalNotes);
+      localStorage.setItem('tabernacle-lineup-team', JSON.stringify(finalTeam));
+    } catch (e) {}
+  }
 
   // Modals & Overlays State
   const [profileMemberId, setProfileMemberId] = useState(null);
@@ -93,14 +130,15 @@ export default function App() {
     const unsubPosts = subscribeCollection('posts', (data) => setAllPosts(data));
 
     const unsubLineup = subscribeDoc('config', 'lineup', (data) => {
-      if (data) {
-        setLineup(data.items || []);
-        setLineupNotes(data.notes || '');
-        setLineupTeam(data.team || []);
-      } else {
-        setLineup([]);
-        setLineupNotes('');
-        setLineupTeam([]);
+      if (data && Array.isArray(data.items)) {
+        updateLineupState(data.items, data.notes || '', data.team || []);
+      } else if (lineupRef.current.length > 0) {
+        // If config/lineup doc doesn't exist yet in Firestore, upload current local lineup
+        fbSetDoc('config', 'lineup', {
+          items: lineupRef.current,
+          notes: lineupNotesRef.current,
+          team: lineupTeamRef.current
+        });
       }
     });
 
@@ -153,9 +191,10 @@ export default function App() {
     try {
       setSyncStatus('syncing');
       await fbDelete('songs', id);
-      const newLineup = lineup.filter(l => l.songId !== id);
-      if (newLineup.length !== lineup.length) {
-        await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotes, team: lineupTeam });
+      const newLineup = lineupRef.current.filter(l => l.songId !== id);
+      if (newLineup.length !== lineupRef.current.length) {
+        updateLineupState(newLineup, lineupNotesRef.current, lineupTeamRef.current);
+        await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotesRef.current, team: lineupTeamRef.current });
       }
       setSyncStatus('online');
       showToast('Song deleted', 'success');
@@ -165,58 +204,64 @@ export default function App() {
   }
 
   async function handleSaveLineupItem(item) {
-    const newLineup = [...lineup, item];
+    const currentItems = lineupRef.current;
+    if (currentItems.find(l => l.songId === item.songId)) {
+      showToast('Already in lineup', 'error');
+      return;
+    }
+    const newLineup = [...currentItems, item];
     const s = songs.find(x => x.id === item.songId);
-    setLineup(newLineup);
-    await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotes, team: lineupTeam });
+    updateLineupState(newLineup, lineupNotesRef.current, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotesRef.current, team: lineupTeamRef.current });
     showToast(`"${s ? s.title : 'Song'}" added!`, 'success');
   }
 
   async function handleAddToLineupDirect(songId) {
-    if (lineup.find(l => l.songId === songId)) {
+    const currentItems = lineupRef.current;
+    if (currentItems.find(l => l.songId === songId)) {
       showToast('Already in lineup', 'error');
       return;
     }
     const s = songs.find(x => x.id === songId);
-    const newLineup = [...lineup, { songId, key: s ? s.key : 'C' }];
-    setLineup(newLineup);
-    await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotes, team: lineupTeam });
+    const newLineup = [...currentItems, { songId, key: s ? s.key : 'C' }];
+    updateLineupState(newLineup, lineupNotesRef.current, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: newLineup, notes: lineupNotesRef.current, team: lineupTeamRef.current });
     showToast(`"${s ? s.title : 'Song'}" added to lineup!`, 'success');
   }
 
   async function handleMoveLineup(idx, dir) {
-    const arr = [...lineup];
+    const arr = [...lineupRef.current];
     const ni = idx + dir;
     if (ni < 0 || ni >= arr.length) return;
     [arr[idx], arr[ni]] = [arr[ni], arr[idx]];
-    setLineup(arr);
-    await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotes, team: lineupTeam });
+    updateLineupState(arr, lineupNotesRef.current, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotesRef.current, team: lineupTeamRef.current });
   }
 
   async function handleRemoveFromLineup(idx) {
-    const arr = [...lineup];
+    const arr = [...lineupRef.current];
     arr.splice(idx, 1);
-    setLineup(arr);
-    await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotes, team: lineupTeam });
+    updateLineupState(arr, lineupNotesRef.current, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: arr, notes: lineupNotesRef.current, team: lineupTeamRef.current });
     showToast('Removed from lineup', 'success');
   }
 
   async function handleClearLineup() {
     const ok = await customConfirm('Clear all songs from Sunday lineup?', 'Clear Lineup', 'Clear All');
     if (!ok) return;
-    setLineup([]);
-    await fbSetDoc('config', 'lineup', { items: [], notes: lineupNotes, team: lineupTeam });
+    updateLineupState([], lineupNotesRef.current, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: [], notes: lineupNotesRef.current, team: lineupTeamRef.current });
     showToast('Lineup cleared!', 'success');
   }
 
   async function handleSaveLineupNotes(notes) {
-    setLineupNotes(notes);
-    await fbSetDoc('config', 'lineup', { items: lineup, notes, team: lineupTeam });
+    updateLineupState(lineupRef.current, notes, lineupTeamRef.current);
+    await fbSetDoc('config', 'lineup', { items: lineupRef.current, notes, team: lineupTeamRef.current });
   }
 
   async function handleSaveTeamAssignment(team) {
-    setLineupTeam(team);
-    await fbSetDoc('config', 'lineup', { items: lineup, notes: lineupNotes, team });
+    updateLineupState(lineupRef.current, lineupNotesRef.current, team);
+    await fbSetDoc('config', 'lineup', { items: lineupRef.current, notes: lineupNotesRef.current, team });
     showToast('Team assigned!', 'success');
   }
 
