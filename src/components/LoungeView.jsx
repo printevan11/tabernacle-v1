@@ -202,6 +202,21 @@ export default function LoungeView({ members }) {
     };
   }, [gameStarted, userName, highScore]);
 
+  const dpadBtnStyle = {
+    width: '44px',
+    height: '44px',
+    borderRadius: '8px',
+    border: '1px solid var(--border)',
+    background: 'var(--surface2)',
+    color: 'var(--text)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    touchAction: 'manipulation',
+    userSelect: 'none'
+  };
+
   return (
     <div className="page active">
       <div className="page-header">
@@ -363,50 +378,54 @@ export default function LoungeView({ members }) {
             />
           </div>
 
-          {/* MOBILE D-PAD TOUCH CONTROLS */}
-          <div className="mobile-dpad">
-            <div className="dpad-row">
+          {/* MOBILE D-PAD TOUCH CONTROLS WITH STYLED BUTTONS */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', margin: '8px 0' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 type="button"
-                className="dpad-btn"
+                style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('w')}
                 onMouseUp={() => handleTouchEnd('w')}
                 onTouchStart={() => handleTouchStart('w')}
                 onTouchEnd={() => handleTouchEnd('w')}
+                title="Up"
               >
-                <ArrowUp size={16} />
+                <ArrowUp size={18} />
               </button>
             </div>
-            <div className="dpad-row">
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 type="button"
-                className="dpad-btn"
+                style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('a')}
                 onMouseUp={() => handleTouchEnd('a')}
                 onTouchStart={() => handleTouchStart('a')}
                 onTouchEnd={() => handleTouchEnd('a')}
+                title="Left"
               >
-                <ArrowLeft size={16} />
+                <ArrowLeft size={18} />
               </button>
               <button
                 type="button"
-                className="dpad-btn"
+                style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('s')}
                 onMouseUp={() => handleTouchEnd('s')}
                 onTouchStart={() => handleTouchStart('s')}
                 onTouchEnd={() => handleTouchEnd('s')}
+                title="Down"
               >
-                <ArrowDown size={16} />
+                <ArrowDown size={18} />
               </button>
               <button
                 type="button"
-                className="dpad-btn"
+                style={dpadBtnStyle}
                 onMouseDown={() => handleTouchStart('d')}
                 onMouseUp={() => handleTouchEnd('d')}
                 onTouchStart={() => handleTouchStart('d')}
                 onTouchEnd={() => handleTouchEnd('d')}
+                title="Right"
               >
-                <ArrowRight size={16} />
+                <ArrowRight size={18} />
               </button>
             </div>
           </div>

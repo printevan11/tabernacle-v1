@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Plus, Trash2, Eye, X } from 'lucide-react';
+import { Search, Plus, Trash2, Eye, X, Mic } from 'lucide-react';
 
 export default function SongsView({
   songs,
@@ -28,21 +28,11 @@ export default function SongsView({
     return result;
   }, [songs, search, catFilter]);
 
-  const catBadge = (cat) => {
-    return {
-      'Praise & Worship': 'green',
-      'Hymns': 'purple',
-      'Contemporary': 'blue',
-      'Slow Worship': 'gold',
-      'Offering': 'blue'
-    }[cat] || 'green';
-  };
-
   return (
     <div className="page active">
       <div className="page-header">
         <div>
-          <div className="page-title">Song Library</div>
+          <div className="page-title">SONG LIBRARY</div>
           <div className="page-subtitle">All worship songs with chords & lyrics</div>
         </div>
         <button className="btn btn-green" onClick={openAddSongModal}>
@@ -50,12 +40,12 @@ export default function SongsView({
         </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div className="search-bar">
           <Search size={16} />
           <input
             type="text"
-            placeholder="Search songs..."
+            placeholder="Search songs by title or artist..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -78,48 +68,61 @@ export default function SongsView({
           )}
         </div>
 
-        <div className="cat-pills">
+        {/* CATEGORY FILTER HORIZONTAL PILLS */}
+        <div className="cat-pills" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
           {categories.map((cat) => (
-            <div
+            <button
               key={cat}
+              type="button"
               className={`cat-pill ${catFilter === cat ? 'active' : ''}`}
               onClick={() => setCatFilter(cat)}
             >
               {cat === 'all' ? 'All Categories' : cat}
-            </div>
+            </button>
           ))}
           {catFilter !== 'all' && (
-            <div
+            <button
+              type="button"
               className="cat-pill"
               onClick={() => setCatFilter('all')}
               style={{ color: '#FF4444', borderColor: '#FF4444' }}
             >
               ✕ Clear Filter
-            </div>
+            </button>
           )}
         </div>
       </div>
 
-      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}>
+      {/* SONG CARDS GRID */}
+      <div className="grid-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
         {filteredSongs.length === 0 ? (
           <div className="empty" style={{ gridColumn: '1 / -1' }}>
             <div className="empty-icon">🎵</div>
-            <div className="empty-text">No songs found</div>
+            <div className="empty-text">No songs found in library</div>
           </div>
         ) : (
           filteredSongs.map((s) => (
             <div key={s.id} className="song-card" onClick={() => navigate('song-detail', s.id)}>
-              <div className="song-title">{s.title}</div>
-              <div className="song-meta">
-                {s.artist && <span>{s.artist}</span>}
-                <span className={`badge badge-${catBadge(s.category)}`}>{s.category || 'Uncategorized'}</span>
-                <span className="badge badge-green">Key: {s.key || '?'}</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <div className="song-title">{s.title}</div>
+                {s.artist && (
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Mic size={11} /> {s.artist}
+                  </div>
+                )}
               </div>
-              <div className="song-actions" onClick={(e) => e.stopPropagation()}>
-                <button className="btn btn-outline btn-sm" onClick={() => navigate('song-detail', s.id)}>
+
+              <div className="song-meta" style={{ marginTop: '10px' }}>
+                <span className="badge badge-gray">{s.category || 'Uncategorized'}</span>
+                <span className="badge badge-green">Key: {s.key || '?'}</span>
+                {s.bpm && <span className="badge badge-purple">♩ {s.bpm}</span>}
+              </div>
+
+              <div className="song-actions" onClick={(e) => e.stopPropagation()} style={{ marginTop: '14px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
+                <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => navigate('song-detail', s.id)}>
                   <Eye size={13} /> View
                 </button>
-                <button className="btn btn-outline btn-sm" onClick={() => addToLineupDirect(s.id)}>
+                <button className="btn btn-outline btn-sm" style={{ flex: 1 }} onClick={() => addToLineupDirect(s.id)}>
                   + Lineup
                 </button>
                 <button className="btn btn-danger btn-sm btn-icon" onClick={() => deleteSong(s.id)}>

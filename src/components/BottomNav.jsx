@@ -21,9 +21,20 @@ export default function BottomNav({ currentPage, navigate }) {
             key={item.id}
             className={`bottom-nav-item ${isActive ? 'active' : ''}`}
             onClick={() => navigate(item.id)}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 1,
+              padding: '6px 2px',
+              gap: '3px'
+            }}
           >
             <Icon size={18} />
-            <span>{item.label}</span>
+            <span style={{ fontSize: '10px', lineHeight: 1, fontWeight: isActive ? 800 : 500 }}>
+              {item.label}
+            </span>
           </div>
         );
       })}
