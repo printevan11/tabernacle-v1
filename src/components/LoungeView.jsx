@@ -1,13 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, MessageSquare, Gamepad2, Sparkles, MapPin, Trophy } from 'lucide-react';
+import { Send, MessageSquare, Gamepad2, Sparkles, MapPin, Trophy, User, ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Edit2 } from 'lucide-react';
 import { subscribeCollection, fbAdd } from '../services/firebase';
 
 export default function LoungeView({ members }) {
+  // Name prompt modal state
+  const [userName, setUserName] = useState(() => localStorage.getItem('tabernacle-user-name') || 'Jana Famor');
+  const [userLoc, setUserLoc] = useState(() => localStorage.getItem('tabernacle-user-loc') || 'Manila, PH');
+  const [isNameModalOpen, setIsNameModalOpen] = useState(() => !localStorage.getItem('tabernacle-user-name'));
+
+  const [inputName, setInputName] = useState(userName);
+  const [inputLoc, setInputLoc] = useState(userLoc);
+
   // Live Chat State
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const [username, setUsername] = useState('Musician');
-  const [location, setLocation] = useState('Manila, PH');
   const chatBottomRef = useRef(null);
 
   // Mini Game State
@@ -15,6 +21,7 @@ export default function LoungeView({ members }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(() => parseInt(localStorage.getItem('tabernacle-game-hs') || '0'));
+  const touchKeyRef = useRef({});
 
   // Sync Live Chat with Firebase Firestore
   useEffect(() => {
@@ -30,12 +37,17 @@ export default function LoungeView({ members }) {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Set random or first member name for chat
-  useEffect(() => {
-    if (members && members.length > 0) {
-      setUsername(members[0].name || 'Paldo');
-    }
-  }, [members]);
+  function handleSaveName(e) {
+    e.preventDefault();
+    if (!inputName.trim()) return;
+    const finalName = inputName.trim();
+    const finalLoc = inputLoc.trim() || 'Manila, PH';
+    setUserName(finalName);
+    setUserLoc(finalLoc);
+    localStorage.setItem('tabernacle-user-name', finalName);
+    localStorage.setItem('tabernacle-user-loc', finalLoc);
+    setIsNameModalOpen(false);
+  }
 
   async function handleSendMessage(e) {
     e.preventDefault();
@@ -44,29 +56,38 @@ export default function LoungeView({ members }) {
     setText('');
     try {
       await fbAdd('chat_messages', {
-        author: username,
-        location: location,
+        author: userName,
+        location: userLoc,
         text: msgText,
-        avatar: username[0] || 'M'
+        avatar: userName[0] || 'M'
       });
     } catch (err) {
       console.error(err);
     }
   }
 
-  // 2D Pixel Mini Game Engine (WASD / Arrow Controls)
+  // Mobile Touch Controls for Game
+  function handleTouchStart(key) {
+    touchKeyRef.current[key] = true;
+    if (!gameStarted) setGameStarted(true);
+  }
+  function handleTouchEnd(key) {
+    touchKeyRef.current[key] = false;
+  }
+
+  // 2D Pixel Mini Game Engine (WASD / Arrow Controls / Mobile Touch)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
     let animationFrameId;
-    let player = { x: 180, y: 140, size: 16, vx: 0, vy: 0, speed: 3 };
+    let player = { x: 160, y: 110, size: 16, speed: 3 };
     let coins = [
-      { x: 80, y: 60, radius: 6 },
-      { x: 260, y: 100, radius: 6 },
-      { x: 140, y: 220, radius: 6 },
-      { x: 300, y: 200, radius: 6 }
+      { x: 60, y: 50, radius: 6 },
+      { x: 240, y: 90, radius: 6 },
+      { x: 120, y: 180, radius: 6 },
+      { x: 280, y: 170, radius: 6 }
     ];
     let keys = {};
 
@@ -115,11 +136,11 @@ export default function LoungeView({ members }) {
       }
 
       if (gameStarted) {
-        // Player Input Movement
-        if (keys['w'] || keys['arrowup']) player.y -= player.speed;
-        if (keys['s'] || keys['arrowdown']) player.y += player.speed;
-        if (keys['a'] || keys['arrowleft']) player.x -= player.speed;
-        if (keys['d'] || keys['arrowright']) player.x += player.speed;
+        // Player Input Movement (Keyboard + Touch)
+        if (keys['w'] || keys['arrowup'] || touchKeyRef.current['w']) player.y -= player.speed;
+        if (keys['s'] || keys['arrowdown'] || touchKeyRef.current['s']) player.y += player.speed;
+        if (keys['a'] || keys['arrowleft'] || touchKeyRef.current['a']) player.x -= player.speed;
+        if (keys['d'] || keys['arrowright'] || touchKeyRef.current['d']) player.x += player.speed;
 
         // Keep inside canvas bounds
         player.x = Math.max(8, Math.min(canvas.width - player.size - 8, player.x));
@@ -157,16 +178,16 @@ export default function LoungeView({ members }) {
         ctx.fillStyle = '#A1A1AA';
         ctx.font = '10px "JetBrains Mono"';
         ctx.textAlign = 'center';
-        ctx.fillText(username, player.x + player.size / 2, player.y - 6);
+        ctx.fillText(userName, player.x + player.size / 2, player.y - 6);
       } else {
         // Prompt Overlay
         ctx.fillStyle = '#FFFFFF';
         ctx.font = '13px "JetBrains Mono"';
         ctx.textAlign = 'center';
-        ctx.fillText('click to play • W A S D', canvas.width / 2, canvas.height / 2 - 10);
+        ctx.fillText('tap / click to play', canvas.width / 2, canvas.height / 2 - 10);
         ctx.fillStyle = '#71717A';
         ctx.font = '11px "JetBrains Mono"';
-        ctx.fillText('Use WASD or Arrow Keys to move & collect notes', canvas.width / 2, canvas.height / 2 + 14);
+        ctx.fillText('WASD, Arrow keys, or Touch D-Pad to move', canvas.width / 2, canvas.height / 2 + 14);
       }
 
       animationFrameId = requestAnimationFrame(gameLoop);
@@ -179,7 +200,7 @@ export default function LoungeView({ members }) {
       window.removeEventListener('keyup', handleKeyUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [gameStarted, username, highScore]);
+  }, [gameStarted, userName, highScore]);
 
   return (
     <div className="page active">
@@ -188,16 +209,16 @@ export default function LoungeView({ members }) {
           <div className="page-title">TEAM LOUNGE</div>
           <div className="page-subtitle">Real-time Live Chat & Arcade Mini Game</div>
         </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <span className="badge badge-green">💬 Live Chat</span>
           <span className="badge badge-purple">🕹️ WASD Game</span>
         </div>
       </div>
 
-      <div className="grid-2" style={{ gridTemplateColumns: '1.2fr 1fr', gap: '20px' }}>
+      <div className="lounge-grid">
         {/* LEFT: LIVE CHAT ROOM */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', height: '560px', padding: '0', overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="card lounge-chat-card">
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
             <div style={{ fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MessageSquare size={16} /> Live Team Messages
             </div>
@@ -207,7 +228,7 @@ export default function LoungeView({ members }) {
           </div>
 
           {/* CHAT MESSAGES LIST */}
-          <div style={{ flex: 1, padding: '16px 20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="chat-messages-container">
             {messages.length === 0 ? (
               <div className="empty">
                 <div className="empty-icon"><MessageSquare size={32} /></div>
@@ -215,7 +236,7 @@ export default function LoungeView({ members }) {
               </div>
             ) : (
               messages.map((msg, i) => (
-                <div key={msg.id || i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div key={msg.id || i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
                   <div
                     style={{
                       width: '32px',
@@ -233,11 +254,11 @@ export default function LoungeView({ members }) {
                       marginTop: '2px'
                     }}
                   >
-                    {msg.avatar || msg.author ? msg.author[0] : 'M'}
+                    {msg.avatar || (msg.author ? msg.author[0] : 'M')}
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>
                         {msg.author || 'Anonymous'}
                       </span>
@@ -251,12 +272,12 @@ export default function LoungeView({ members }) {
                         background: 'var(--surface2)',
                         border: '1px solid var(--border)',
                         borderRadius: '8px 14px 14px 14px',
-                        padding: '10px 14px',
+                        padding: '9px 13px',
                         fontSize: '13px',
                         color: 'var(--text)',
                         lineHeight: 1.5,
                         width: 'fit-content',
-                        maxWidth: '90%',
+                        maxWidth: '92%',
                         wordBreak: 'break-word'
                       }}
                     >
@@ -270,18 +291,22 @@ export default function LoungeView({ members }) {
           </div>
 
           {/* CHAT INPUT FORM */}
-          <form onSubmit={handleSendMessage} style={{ padding: '14px 16px', borderTop: '1px solid var(--border)', background: 'var(--surface2)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '8px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>
-                chatting as <strong style={{ color: 'var(--text)' }}>{username}</strong>
+          <form onSubmit={handleSendMessage} className="chat-input-form">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                chatting as <strong style={{ color: 'var(--text)' }}>{userName}</strong>
+                <button
+                  type="button"
+                  onClick={() => setIsNameModalOpen(true)}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 4px' }}
+                  title="Change display name"
+                >
+                  <Edit2 size={12} />
+                </button>
               </div>
-              <input
-                type="text"
-                placeholder="Your city (e.g. Manila, PH)"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                style={{ width: '130px', padding: '3px 8px', fontSize: '10.5px', background: 'var(--surface3)' }}
-              />
+              <div style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: 500 }}>
+                {userLoc}
+              </div>
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -292,7 +317,7 @@ export default function LoungeView({ members }) {
                 onChange={(e) => setText(e.target.value)}
                 style={{ flex: 1, padding: '10px 14px', fontSize: '13px' }}
               />
-              <button type="submit" className="btn btn-green" style={{ minWidth: '80px' }}>
+              <button type="submit" className="btn btn-green" style={{ minWidth: '80px', height: '38px' }}>
                 send ↵
               </button>
             </div>
@@ -300,12 +325,12 @@ export default function LoungeView({ members }) {
         </div>
 
         {/* RIGHT: MINI ARCADE GAME */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <div className="section-header" style={{ marginBottom: '0' }}>
             <div className="section-title">
               <Gamepad2 size={18} /> Pixel Note Collector
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
                 Score: <strong style={{ color: 'var(--text)' }}>{score}</strong>
               </span>
@@ -315,8 +340,8 @@ export default function LoungeView({ members }) {
             </div>
           </div>
 
-          <div style={{ fontSize: '11.5px', color: 'var(--muted)', fontWeight: 500 }}>
-            wasd / arrows to move
+          <div style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 500 }}>
+            wasd / arrows / touch to move
           </div>
 
           <div
@@ -325,21 +350,70 @@ export default function LoungeView({ members }) {
               borderRadius: 'var(--radius-sm)',
               overflow: 'hidden',
               border: '1px solid var(--border)',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              width: '100%'
             }}
             onClick={() => setGameStarted(true)}
           >
             <canvas
               ref={canvasRef}
-              width={420}
-              height={360}
+              width={360}
+              height={260}
               style={{ width: '100%', height: 'auto', display: 'block', background: '#09090B' }}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)', padding: '12px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text2)', fontWeight: 500 }}>
-              Controls: Press <strong style={{ color: 'var(--text)' }}>W, A, S, D</strong> or <strong style={{ color: 'var(--text)' }}>Arrow Keys</strong>
+          {/* MOBILE D-PAD TOUCH CONTROLS */}
+          <div className="mobile-dpad">
+            <div className="dpad-row">
+              <button
+                type="button"
+                className="dpad-btn"
+                onMouseDown={() => handleTouchStart('w')}
+                onMouseUp={() => handleTouchEnd('w')}
+                onTouchStart={() => handleTouchStart('w')}
+                onTouchEnd={() => handleTouchEnd('w')}
+              >
+                <ArrowUp size={16} />
+              </button>
+            </div>
+            <div className="dpad-row">
+              <button
+                type="button"
+                className="dpad-btn"
+                onMouseDown={() => handleTouchStart('a')}
+                onMouseUp={() => handleTouchEnd('a')}
+                onTouchStart={() => handleTouchStart('a')}
+                onTouchEnd={() => handleTouchEnd('a')}
+              >
+                <ArrowLeft size={16} />
+              </button>
+              <button
+                type="button"
+                className="dpad-btn"
+                onMouseDown={() => handleTouchStart('s')}
+                onMouseUp={() => handleTouchEnd('s')}
+                onTouchStart={() => handleTouchStart('s')}
+                onTouchEnd={() => handleTouchEnd('s')}
+              >
+                <ArrowDown size={16} />
+              </button>
+              <button
+                type="button"
+                className="dpad-btn"
+                onMouseDown={() => handleTouchStart('d')}
+                onMouseUp={() => handleTouchEnd('d')}
+                onTouchStart={() => handleTouchStart('d')}
+                onTouchEnd={() => handleTouchEnd('d')}
+              >
+                <ArrowRight size={16} />
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ fontSize: '11.5px', color: 'var(--text2)', fontWeight: 500 }}>
+              Controls: <strong style={{ color: 'var(--text)' }}>W, A, S, D</strong> or Touch D-Pad
             </div>
             <button className="btn btn-outline btn-sm" onClick={() => { setScore(0); setGameStarted(true); }}>
               Reset Game
@@ -347,6 +421,53 @@ export default function LoungeView({ members }) {
           </div>
         </div>
       </div>
+
+      {/* PROMPT NAME MODAL */}
+      {isNameModalOpen && (
+        <div className="modal-overlay open" onClick={(e) => e.target.classList.contains('modal-overlay') && setIsNameModalOpen(false)}>
+          <div className="modal" style={{ maxWidth: '420px' }}>
+            <div className="modal-header">
+              <div className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <User size={18} /> Join Team Lounge
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveName} className="modal-form">
+              <div style={{ fontSize: '12.5px', color: 'var(--text2)', lineHeight: 1.5 }}>
+                Enter your display name to start chatting live with the worship team and playing the arcade game:
+              </div>
+
+              <div className="input-group">
+                <label>Your Display Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Jana Famor"
+                  value={inputName}
+                  onChange={(e) => setInputName(e.target.value)}
+                  autoFocus
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Your City / Location</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Manila, PH"
+                  value={inputLoc}
+                  onChange={(e) => setInputLoc(e.target.value)}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button type="submit" className="btn btn-green">
+                  Enter Lounge →
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
