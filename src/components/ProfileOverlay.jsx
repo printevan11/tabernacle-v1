@@ -276,7 +276,7 @@ export default function ProfileOverlay({
               {member.photo ? (
                 <img src={member.photo} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} />
               ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', fontWeight: 800, color: 'var(--text)' }}>
                   {member.name ? member.name[0] : '?'}
                 </div>
               )}

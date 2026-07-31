@@ -137,68 +137,69 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
 
         {/* RIGHT / BOTTOM: CONTROLS & STEPPERS WITH EXPLICIT STYLED BUTTONS */}
         <div className="metro-controls-box">
-          <div className="metro-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="metro-controls" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', width: '100%' }}>
             <button
               type="button"
-              style={{ ...btnBaseStyle, width: '38px', height: '38px' }}
+              style={{ ...btnBaseStyle, width: '34px', height: '34px', flexShrink: 0 }}
               onClick={() => changeBpm(-5)}
               title="-5 BPM"
             >
-              <ChevronsLeft size={16} />
+              <ChevronsLeft size={15} />
             </button>
             <button
               type="button"
-              style={{ ...btnBaseStyle, width: '38px', height: '38px' }}
+              style={{ ...btnBaseStyle, width: '34px', height: '34px', flexShrink: 0 }}
               onClick={() => changeBpm(-1)}
               title="-1 BPM"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={15} />
             </button>
 
             <button
               type="button"
               style={{
                 ...btnBaseStyle,
-                width: '48px',
-                height: '48px',
+                width: '44px',
+                height: '44px',
                 borderRadius: '50%',
                 background: isPlaying ? 'var(--surface2)' : 'var(--text)',
                 color: isPlaying ? 'var(--text)' : 'var(--bg)',
-                borderColor: isPlaying ? 'var(--border-hover)' : 'var(--text)'
+                borderColor: isPlaying ? 'var(--border-hover)' : 'var(--text)',
+                flexShrink: 0
               }}
               onClick={toggleMetronome}
               title={isPlaying ? 'Pause' : 'Play'}
             >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} style={{ marginLeft: '2px' }} />}
+              {isPlaying ? <Pause size={18} /> : <Play size={18} style={{ marginLeft: '2px' }} />}
             </button>
 
             <button
               type="button"
-              style={{ ...btnBaseStyle, width: '38px', height: '38px' }}
+              style={{ ...btnBaseStyle, width: '34px', height: '34px', flexShrink: 0 }}
               onClick={() => changeBpm(1)}
               title="+1 BPM"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={15} />
             </button>
             <button
               type="button"
-              style={{ ...btnBaseStyle, width: '38px', height: '38px' }}
+              style={{ ...btnBaseStyle, width: '34px', height: '34px', flexShrink: 0 }}
               onClick={() => changeBpm(5)}
               title="+5 BPM"
             >
-              <ChevronsRight size={16} />
+              <ChevronsRight size={15} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', justifyContent: 'center' }}>
               {[2, 3, 4, 6].map((num) => (
                 <button
                   key={num}
                   type="button"
                   style={{
                     ...btnBaseStyle,
-                    padding: '6px 12px',
+                    padding: '5px 9px',
                     fontSize: '11px',
                     fontWeight: beatsPerMeasure === num ? 800 : 500,
                     background: beatsPerMeasure === num ? 'var(--surface3)' : 'var(--surface2)',
@@ -216,7 +217,7 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
               type="button"
               style={{
                 ...btnBaseStyle,
-                padding: '6px 14px',
+                padding: '5px 12px',
                 fontSize: '11px',
                 fontWeight: 700
               }}
