@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Disc, Activity } from 'lucide-react';
+import { Play, Pause, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Activity } from 'lucide-react';
 
 export default function MetronomeCard({ defaultBpm = 120 }) {
   const [bpm, setBpm] = useState(defaultBpm);
@@ -105,15 +105,15 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
         </span>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
-        {/* LEFT: DISPLAY & BEAT DOTS */}
-        <div className="metro-display" style={{ margin: '0', textAlign: 'left' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+      <div className="metronome-grid">
+        {/* LEFT / TOP: DIGITAL DISPLAY & BEAT DOTS */}
+        <div className="metro-display-box">
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
             <div className="metro-bpm">{bpm}</div>
             <div className="metro-bpm-label">BPM</div>
           </div>
 
-          <div className="metro-beat-dots" style={{ justifyContent: 'flex-start', margin: '12px 0 0' }}>
+          <div className="metro-beat-dots">
             {Array.from({ length: beatsPerMeasure }).map((_, idx) => (
               <div
                 key={idx}
@@ -123,9 +123,9 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
           </div>
         </div>
 
-        {/* RIGHT: PLAY BUTTON & CONTROLS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
-          <div className="metro-controls" style={{ margin: '0', gap: '6px' }}>
+        {/* RIGHT / BOTTOM: CONTROLS & STEPPERS */}
+        <div className="metro-controls-box">
+          <div className="metro-controls">
             <button className="metro-btn" onClick={() => changeBpm(-5)} title="-5 BPM">
               <ChevronsLeft size={16} />
             </button>
@@ -147,7 +147,7 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
             <div className="metro-time-btns">
               {[2, 3, 4, 6].map((num) => (
                 <button
@@ -166,7 +166,7 @@ export default function MetronomeCard({ defaultBpm = 120 }) {
         </div>
       </div>
 
-      <div style={{ marginTop: '14px' }}>
+      <div style={{ marginTop: '16px' }}>
         <input
           type="range"
           min="40"

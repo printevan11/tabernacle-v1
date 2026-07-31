@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Play, Edit3, Sliders, Music, FileText, Video, Mic, Plus, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Play, Edit3, Sliders, Music, FileText, Video, Mic, Plus, RotateCcw, Activity, Disc } from 'lucide-react';
 import MetronomeCard from './MetronomeCard';
 import {
   CHROMATIC,
@@ -62,7 +62,7 @@ export default function SongDetailView({
     return (
       <div className="chord-section">
         {sections.map((sec, sIdx) => (
-          <div key={sIdx} style={{ marginBottom: '16px' }}>
+          <div key={sIdx} style={{ marginBottom: '18px' }}>
             {sec.label && <div className="section-label">{sec.label}</div>}
             {sec.lines.map((line, lIdx) => {
               if (isChordLine(line)) {
@@ -73,7 +73,7 @@ export default function SongDetailView({
                   <div
                     key={lIdx}
                     style={{
-                      fontSize: '13.5px',
+                      fontSize: '14px',
                       color: 'var(--text)',
                       margin: '8px 0 3px',
                       letterSpacing: '.6px',
@@ -92,7 +92,7 @@ export default function SongDetailView({
                     style={{
                       fontSize: '13.5px',
                       color: 'var(--text2)',
-                      margin: '0 0 3px',
+                      margin: '0 0 4px',
                       lineHeight: 1.65,
                       fontWeight: 400,
                       wordBreak: 'break-word'
@@ -117,34 +117,50 @@ export default function SongDetailView({
         <ArrowLeft size={16} /> Back to Library
       </div>
 
-      {/* SONG TITLE BANNER */}
+      {/* STUDIO HERO SONG TITLE HEADER */}
       <div className="song-detail-header">
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <Disc size={16} style={{ color: 'var(--muted)' }} />
+              <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+                Worship Track Details
+              </span>
+            </div>
+
             <div className="song-detail-title">{song.title}</div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '10px' }}>
+
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '12px', alignItems: 'center' }}>
               {song.artist && (
-                <span className="badge badge-blue">
-                  <Mic size={12} style={{ marginRight: '4px' }} /> {song.artist}
+                <span className="badge badge-blue" style={{ fontSize: '12px', padding: '4px 10px' }}>
+                  <Mic size={12} style={{ marginRight: '5px' }} /> {song.artist}
                 </span>
               )}
-              <span className="badge badge-green">Key: {currentKey}</span>
+              <span className="badge badge-green" style={{ fontSize: '12px', padding: '4px 10px', fontWeight: 700 }}>
+                Active Key: {currentKey}
+              </span>
               {semitone !== 0 && (
-                <span className="badge badge-purple">
+                <span className="badge badge-purple" style={{ fontSize: '11px', padding: '4px 10px' }}>
                   Original: {originalKey} ({semitone > 0 ? `+${semitone}` : semitone})
                 </span>
               )}
-              <span className="badge badge-green">{song.category || 'Uncategorized'}</span>
-              {song.bpm && <span className="badge badge-purple">♩ {song.bpm} BPM</span>}
+              <span className="badge badge-gray" style={{ fontSize: '12px', padding: '4px 10px' }}>
+                {song.category || 'Uncategorized'}
+              </span>
+              {song.bpm && (
+                <span className="badge badge-purple" style={{ fontSize: '12px', padding: '4px 10px' }}>
+                  <Activity size={12} style={{ marginRight: '4px' }} /> {song.bpm} BPM
+                </span>
+              )}
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
-            <button className="btn btn-outline btn-sm" onClick={() => addToLineupDirect(song.id)}>
-              <Plus size={14} /> Lineup
+            <button className="btn btn-outline" onClick={() => addToLineupDirect(song.id)}>
+              <Plus size={15} /> + Lineup
             </button>
-            <button className="btn btn-green btn-sm" onClick={() => openEditSongModal(song)}>
-              <Edit3 size={14} /> Edit Song
+            <button className="btn btn-green" onClick={() => openEditSongModal(song)}>
+              <Edit3 size={15} /> Edit Song
             </button>
           </div>
         </div>
@@ -189,7 +205,7 @@ export default function SongDetailView({
         </div>
       </div>
 
-      {/* PRECISION METRONOME */}
+      {/* PRECISION RESPONSIVE METRONOME */}
       <MetronomeCard defaultBpm={parseInt(song.bpm) || 120} />
 
       {/* PRACTICE TRACK (YOUTUBE) */}
